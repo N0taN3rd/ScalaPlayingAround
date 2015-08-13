@@ -18,45 +18,57 @@ object Main {
     Stream range(2,x + 1) filter(xs => x % xs == 0) map {xs => (xs,x/xs)} toList
 
   def genDivFromRange(r: Range.Inclusive): List[List[(Int,Int)]] =
-    r.map{ generateDivisibility }.toList.filter(nonEmptyList)
+    r.map {
+      generateDivisibility
+    } filter (nonEmptyList) toList
 
   def genDivFromRange2(r: Range.Inclusive): List[(Int,List[(Int,Int)])] =
-    genDivFromRange(r) map { l => (l.head._1 * l.head._2 , l)}
+    genDivFromRange(r) map { l => (l.head._1 * l.head._2, l) } sortBy (_._1)
 
+  def sum(xs: List[Int]): Int = {
+    xs match {
+      case x :: tail => x + sum(tail)
+      case Nil => 0
+    }
+  }
 
   def main(args: Array[String]) {
+
+    val ret = genDivFromRange2(2 to 100)
+    ret foreach println
+
+    val hMap = (HashMap[Int, List[(Int, Int)]]() /: (2 to 100 flatMap generateDivisibility)) { (hm, t) => hm + ((t._1 * t._2, t :: hm.getOrElse(t._1 * t._2, List[(Int, Int)]()))) }
+
+    val primes = hMap.toSeq.filter(_._2.size == 1) sortBy (_._1)
+
     val f = (i: Int) => i.toString
 
     val g = (s: String) => s.length
 
     val h = (i: Int) => i * i
 
-    //IndexSeq[Int,Int]
 
-    val f2 =(x: Range.Inclusive) => x zip{Stream from 1}
-    val g2 = (x: (Int,Int)) => (1 to x._2) map { i => multiply(x._1,i) } zip { Stream from 1 }
-    val h2 = (x: IndexedSeq[(Int,Int)]) => x map { elem => multiply(elem._1, elem._2) }
+    val f2 = (x: Range.Inclusive) => x zip {
+      Stream from 1
+    }
+    val g2 = (x: (Int, Int)) => (1 to x._2) map { i => multiply(x._1, i) } zip {
+      Stream from 1
+    }
+    val h2 = (x: IndexedSeq[(Int, Int)]) => x map { elem => multiply(elem._1, elem._2) }
 
     // (1 to 10) map { multiply } map { compose(h,compose(g,f)) } foreach  println
     println("-----------------")
 
-    val a = (x: Range.Inclusive) => x zip { Stream from 1 } toList
+    val a = (x: Range.Inclusive) => x zip {
+      Stream from 1
+    } toList
     //val bb = (list: List[(Int,Int)],fun: (Int,Int) => IndexedSeq[(Int,Int)]) => list map {fun}
-    val b = (x: List[(Int,Int)]) => x flatMap  { xs => (1 to xs._2) map { i => multiply(xs._1,i) } zip { Stream from 1 } }
-    val c = (x: List[(Int,Int)]) => x map { elem => elem._1 + elem._2 }
-
-
-    //def shit(listMap: ListMap[Int,(Int,Int)], t: (Int,Int)): ListMap[Int,(Int,Int)] = ((t._1*t._2),t) + listMap
-    def sum(xs: List[Int]): Int = {
-      xs match {
-        case x :: tail => x + sum(tail)
-        case Nil => 0
-      }
+    val b = (x: List[(Int, Int)]) => x flatMap { xs => (1 to xs._2) map { i => multiply(xs._1, i) } zip {
+      Stream from 1
     }
+    }
+    val c = (x: List[(Int, Int)]) => x map { elem => elem._1 + elem._2 }
 
-
-    val ret = genDivFromRange2(2 to 100)
-    ret foreach println
     //flatmap((2 to 100).toList, generateDivisibility) foreach println
     // (ListMap[Int,(Int,Int)] /: ( 2 to 100  flatMap generateDivisibility)) { (lm:ListMap[Int,(Int,Int)],ii:(Int,Int)) => (ii._1 * ii._2,ii) + lm}
     /*
